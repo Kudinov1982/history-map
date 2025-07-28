@@ -10,11 +10,11 @@ function init() {
     });
 
     // --- 2. ПОЛУЧЕНИЕ ДАННЫХ ---
-    // Ссылка на ваш новый файл с обогащенными данными
+    // Ссылка на ваш файл с обогащенными данными
     const DATA_URL = 'https://cdn.jsdelivr.net/gh/Kudinov1982/history-map/historical_events_rich.json';
     
     let allEvents = [];
-    // Создаем коллекцию для хранения наших меток (аналог LayerGroup в Leaflet)
+    // Создаем коллекцию для хранения наших меток
     let placemarksCollection = new ymaps.GeoObjectCollection(null, {});
     myMap.geoObjects.add(placemarksCollection);
 
@@ -23,48 +23,45 @@ function init() {
 
     // --- 3. ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ КАРТЫ ---
     function updateMap(year) {
-        // Очищаем коллекцию от старых меток
         placemarksCollection.removeAll();
-
         const eventsForYear = allEvents.filter(event => event.year === parseInt(year));
 
         eventsForYear.forEach(event => {
-            // Создаем HTML-содержимое для балуна (всплывающего окна)
             const balloonContent = `
                 <div class="custom-balloon">
                     <div class="custom-balloon__title">${event.name}</div>
                     <div class="custom-balloon__content">
-                        ${event.extract || 'Описание отсутствует.'}
+                        ${event.extract}
                         ${event.wiki_url ? `<hr class="custom-balloon__divider"><a href="${event.wiki_url}" target="_blank">Читать в Википедии</a>` : ''}
                     </div>
                 </div>
             `;
-
             const placemark = new ymaps.Placemark(
-                [event.lat, event.lon], // Координаты метки
-                {
-                    balloonContent: balloonContent,
-                    hintContent: event.name 
-                }, 
-                {
-                    preset: 'islands#blueDotIcon'
-                }
+                [event.lat, event.lon],
+                { balloonContent: balloonContent, hintContent: event.name }, 
+                { preset: 'islands#blueDotIcon' }
             );
-            
             placemarksCollection.add(placemark);
         });
     }
 
     // --- 4. ЗАГРУЗКА ДАННЫХ И ПЕРВЫЙ ЗАПУСК ---
     fetch(DATA_URL)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+            return response.json();
+        })
         .then(data => {
             allEvents = data;
-            console.log(`Обогащенные данные успешно загружены. Всего событий: ${allEvents.length}`);
+            console.log(`Данные успешно загружены. Всего событий: ${allEvents.length}`);
             const initialYear = yearSlider.value;
+            yearDisplay.textContent = initialYear;
             updateMap(initialYear);
         })
-        .catch(error => console.error('Ошибка загрузки данных:', error));
+        .catch(error => {
+            console.error('Ошибка загрузки данных:', error);
+            document.getElementById('map').innerHTML = `<div style="padding: 20px; text-align: center;">Не удалось загрузить данные событий. Проверьте консоль (F12) на наличие ошибок.</div>`;
+        });
 
     // --- 5. СВЯЗЫВАЕМ СЛАЙДЕР С КАРТОЙ ---
     yearSlider.addEventListener('input', (event) => {
