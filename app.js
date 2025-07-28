@@ -1,29 +1,57 @@
-// Ждем, пока вся HTML-страница полностью загрузится
-document.addEventListener('DOMContentLoaded', () => {
+// Ждем, пока загрузится API Яндекс.Карт, и только потом выполняем наш код
+ymaps.ready(init);
 
+function init() {
     // --- 1. ИНИЦИАЛИЗАЦИЯ КАРТЫ ---
-    const map = L.map('map').setView([60, 90], 4); // Центр на России, масштаб 4
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    const myMap = new ymaps.Map('map', {
+        center: [58, 65], // Координаты сфокусированы на России
+        zoom: 4,
+        controls: ['zoomControl'] // Оставляем только кнопки масштаба
+    });
 
     // --- 2. ПОЛУЧЕНИЕ ДАННЫХ ---
-    // !!! ИСПОЛЬЗУЕМ ВАШУ РЕАЛЬНУЮ ССЫЛКУ !!!
-    const DATA_URL = 'https://cdn.jsdelivr.net/gh/Kudinov1982/history-map/historical_events.json';
+    // Ссылка на ваш новый файл с обогащенными данными
+    const DATA_URL = 'https://cdn.jsdelivr.net/gh/Kudinov1982/history-map/historical_events_rich.json';
     
     let allEvents = [];
-    let markersLayer = L.layerGroup().addTo(map);
+    // Создаем коллекцию для хранения наших меток (аналог LayerGroup в Leaflet)
+    let placemarksCollection = new ymaps.GeoObjectCollection(null, {});
+    myMap.geoObjects.add(placemarksCollection);
+
     const yearSlider = document.getElementById('year-slider');
     const yearDisplay = document.getElementById('year-display');
 
     // --- 3. ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ КАРТЫ ---
     function updateMap(year) {
-        markersLayer.clearLayers();
+        // Очищаем коллекцию от старых меток
+        placemarksCollection.removeAll();
+
         const eventsForYear = allEvents.filter(event => event.year === parseInt(year));
+
         eventsForYear.forEach(event => {
-            const marker = L.marker([event.lat, event.lon]);
-            marker.bindPopup(`<b>${event.name}</b><br>Тип: ${event.type}<br>Место: ${event.location}`);
-            markersLayer.addLayer(marker);
+            // Создаем HTML-содержимое для балуна (всплывающего окна)
+            const balloonContent = `
+                <div class="custom-balloon">
+                    <div class="custom-balloon__title">${event.name}</div>
+                    <div class="custom-balloon__content">
+                        ${event.extract || 'Описание отсутствует.'}
+                        ${event.wiki_url ? `<hr class="custom-balloon__divider"><a href="${event.wiki_url}" target="_blank">Читать в Википедии</a>` : ''}
+                    </div>
+                </div>
+            `;
+
+            const placemark = new ymaps.Placemark(
+                [event.lat, event.lon], // Координаты метки
+                {
+                    balloonContent: balloonContent,
+                    hintContent: event.name 
+                }, 
+                {
+                    preset: 'islands#blueDotIcon'
+                }
+            );
+            
+            placemarksCollection.add(placemark);
         });
     }
 
@@ -32,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             allEvents = data;
-            console.log(`Данные успешно загружены. Всего событий: ${allEvents.length}`);
+            console.log(`Обогащенные данные успешно загружены. Всего событий: ${allEvents.length}`);
             const initialYear = yearSlider.value;
             updateMap(initialYear);
         })
@@ -44,4 +72,4 @@ document.addEventListener('DOMContentLoaded', () => {
         yearDisplay.textContent = selectedYear;
         updateMap(selectedYear);
     });
-});
+}
