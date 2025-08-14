@@ -1,4 +1,3 @@
-javascript
 // ====== ФУНКЦИЯ-ОБЕРТКА ДЛЯ ВТОРОГО ПРИЛОЖЕНИЯ (PROKUDIN/TENISHEV) ======
 function initProkudinTenishevApp(sharedData) {
     let myMap = null; let cityCollection = null; let uyezdChoicesInstance = null; let activePlacemark = null; let provinceIndex = []; let prokudinItems = []; let tenishevItems = []; let allItems = [];
