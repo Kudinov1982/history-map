@@ -1,4 +1,3 @@
-javascript
 const MAP_DATA = {
     initialCities: [
         { name: 'Москва', lat: 55.7558, lng: 37.6173, priority: 1 }, { name: 'Санкт-Петербург', lat: 59.9343, lng: 30.3351, priority: 1 }, { name: 'Киев', lat: 50.4501, lng: 30.5234, priority: 1 },
