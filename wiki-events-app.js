@@ -1,4 +1,3 @@
-javascript
 function initWikiEventsApp(sharedData) {
     const sidebar = document.querySelector('#app-wiki-events .sidebar');
     const loaderStatus = document.getElementById('loader-status-text-sidebar');
