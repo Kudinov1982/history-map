@@ -1,4 +1,3 @@
-// Этот файл должен начинаться именно с этой строки
 function initWikiEventsApp(sharedData) {
     const sidebar = document.querySelector('#app-wiki-events .sidebar');
     const loaderStatus = document.getElementById('loader-status-text-sidebar');
@@ -6,7 +5,6 @@ function initWikiEventsApp(sharedData) {
 
     const initialCities = sharedData.initialCities;
 
-    // ... (остальной код первого приложения без изменений) ...
     const BASE_DATA_URL = 'https://cdn.jsdelivr.net/gh/Kudinov1982/history-map/';
     const PROVINCES_GEOJSON = 'https://raw.githubusercontent.com/Kudinov1982/map/main/provinces_1897.geojson';
     const UYEZDS_GEOJSON = 'https://raw.githubusercontent.com/Kudinov1982/map/main/map_25022025.geojson';
